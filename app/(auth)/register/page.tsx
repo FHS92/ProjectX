@@ -1,22 +1,49 @@
-import { signIn } from '@/lib/auth'
-import Link from 'next/link'
+'use client'
 
-const verticals = [
-  { id: 'shotgun', icon: '🎯', label: 'Shotgun Shooting' },
-  { id: 'pistol', icon: '🔫', label: 'Pistol Shooting' },
-  { id: 'hunting', icon: '🦆', label: 'Hunting' },
-  { id: 'fishing', icon: '🎣', label: 'Fishing' },
-  { id: 'diving', icon: '🤿', label: 'Diving' },
-  { id: 'diy', icon: '🪵', label: 'DIY & Builds' },
-]
+import { useState } from 'react'
+import { signIn } from 'next-auth/react'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
 export default function RegisterPage() {
+  const router = useRouter()
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+
+  async function handleRegister(e: React.FormEvent) {
+    e.preventDefault()
+    setLoading(true)
+    setError('')
+
+    const res = await fetch('/api/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, password }),
+    })
+
+    if (!res.ok) {
+      const json = await res.json()
+      setError(json.error ?? 'Something went wrong.')
+      setLoading(false)
+      return
+    }
+
+    // Auto sign-in after registration
+    await signIn('credentials', { email, password, callbackUrl: '/dashboard', redirect: true })
+  }
+
+  async function handleGoogle() {
+    await signIn('google', { callbackUrl: '/dashboard' })
+  }
+
   return (
     <main style={{
       minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
       padding: '24px', background: 'var(--bg-base)', position: 'relative', overflow: 'hidden',
     }}>
-      {/* Glow */}
       <div style={{
         position: 'absolute', top: '-100px', left: '50%', transform: 'translateX(-50%)',
         width: '600px', height: '400px',
@@ -25,49 +52,62 @@ export default function RegisterPage() {
       }} />
 
       <div style={{
-        width: '100%', maxWidth: '440px',
+        width: '100%', maxWidth: '420px',
         background: 'var(--bg-card)', border: '1px solid var(--border)',
         borderRadius: '24px', padding: '40px 36px',
         boxShadow: 'var(--shadow-raised)',
       }}>
-        <div style={{ textAlign: 'center', marginBottom: '28px' }}>
-          <p style={{ fontFamily: 'var(--font-playfair)', fontSize: '24px', fontWeight: 700, color: 'var(--amber)', letterSpacing: '0.12em', marginBottom: '10px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+          <p style={{ fontFamily: 'var(--font-playfair)', fontSize: '22px', fontWeight: 700, color: 'var(--amber)', letterSpacing: '0.12em', marginBottom: '10px' }}>
             MANSAPP
           </p>
-          <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: '22px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '8px' }}>
+          <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: '20px', fontWeight: 600, color: 'var(--text-primary)' }}>
             Create your account
           </h1>
-          <p style={{ fontSize: '13px', color: 'var(--text-muted)', fontFamily: 'var(--font-inter)' }}>
-            Select your sports — you can change these any time.
-          </p>
         </div>
 
-        {/* Activity selector */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '28px' }}>
-          {verticals.map((v) => (
-            <div key={v.id} style={{
-              display: 'flex', alignItems: 'center', gap: '10px',
-              padding: '12px 14px', borderRadius: '12px', cursor: 'pointer',
-              background: 'var(--bg-raised)', border: '1px solid var(--border)',
-              transition: 'all 0.2s ease',
-            }}>
-              <span style={{ fontSize: '22px' }}>{v.icon}</span>
-              <span style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-secondary)', fontFamily: 'var(--font-inter)' }}>
-                {v.label}
-              </span>
-            </div>
-          ))}
-        </div>
-
-        <form action={async () => {
-          'use server'
-          await signIn('google', { redirectTo: '/dashboard' })
-        }}>
-          <button type="submit" className="btn-primary" style={{ width: '100%', padding: '14px' }}>
-            <GoogleIcon />
-            Sign up with Google
+        {/* Register form */}
+        <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '20px' }}>
+          <input
+            type="text" placeholder="Full name" value={name}
+            onChange={(e) => setName(e.target.value)} required
+            style={inputStyle}
+          />
+          <input
+            type="email" placeholder="Email address" value={email}
+            onChange={(e) => setEmail(e.target.value)} required
+            style={inputStyle}
+          />
+          <input
+            type="password" placeholder="Password (min 6 characters)" value={password}
+            onChange={(e) => setPassword(e.target.value)} required minLength={6}
+            style={inputStyle}
+          />
+          {error && (
+            <p style={{ fontSize: '13px', color: 'var(--red)', fontFamily: 'var(--font-inter)' }}>{error}</p>
+          )}
+          <button type="submit" className="btn-primary" style={{ width: '100%', padding: '13px' }} disabled={loading}>
+            {loading ? 'Creating account…' : 'Create account'}
           </button>
         </form>
+
+        {/* Divider */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
+          <div style={{ flex: 1, height: '1px', background: 'var(--border)' }} />
+          <span style={{ fontSize: '12px', color: 'var(--text-subtle)', fontFamily: 'var(--font-inter)' }}>or</span>
+          <div style={{ flex: 1, height: '1px', background: 'var(--border)' }} />
+        </div>
+
+        {/* Google */}
+        <button onClick={handleGoogle} style={{
+          width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
+          padding: '13px', borderRadius: '12px', fontSize: '14px', fontWeight: 600,
+          background: 'var(--bg-raised)', border: '1px solid var(--border)',
+          color: 'var(--text-primary)', cursor: 'pointer', fontFamily: 'var(--font-inter)',
+        }}>
+          <GoogleIcon />
+          Sign up with Google
+        </button>
 
         <p style={{ textAlign: 'center', fontSize: '13px', color: 'var(--text-muted)', marginTop: '24px', fontFamily: 'var(--font-inter)' }}>
           Already have an account?{' '}
@@ -78,6 +118,12 @@ export default function RegisterPage() {
       </div>
     </main>
   )
+}
+
+const inputStyle: React.CSSProperties = {
+  width: '100%', padding: '12px 14px', borderRadius: '10px', fontSize: '14px',
+  background: 'var(--bg-raised)', border: '1px solid var(--border)',
+  color: 'var(--text-primary)', fontFamily: 'var(--font-inter)', outline: 'none',
 }
 
 function GoogleIcon() {

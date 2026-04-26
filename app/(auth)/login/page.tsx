@@ -1,13 +1,39 @@
-import { signIn } from '@/lib/auth'
+'use client'
+
+import { useState } from 'react'
+import { signIn } from 'next-auth/react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
 export default function LoginPage() {
+  const router = useRouter()
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+
+  async function handleCredentials(e: React.FormEvent) {
+    e.preventDefault()
+    setLoading(true)
+    setError('')
+    const res = await signIn('credentials', { email, password, redirect: false })
+    if (res?.error) {
+      setError('Incorrect email or password.')
+      setLoading(false)
+    } else {
+      router.push('/dashboard')
+    }
+  }
+
+  async function handleGoogle() {
+    await signIn('google', { callbackUrl: '/dashboard' })
+  }
+
   return (
     <main style={{
       minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
       padding: '24px', background: 'var(--bg-base)', position: 'relative', overflow: 'hidden',
     }}>
-      {/* Glow */}
       <div style={{
         position: 'absolute', top: '-100px', left: '50%', transform: 'translateX(-50%)',
         width: '600px', height: '400px',
@@ -21,35 +47,54 @@ export default function LoginPage() {
         borderRadius: '24px', padding: '40px 36px',
         boxShadow: 'var(--shadow-raised)',
       }}>
-        <div style={{ textAlign: 'center', marginBottom: '36px' }}>
-          <p style={{ fontFamily: 'var(--font-playfair)', fontSize: '24px', fontWeight: 700, color: 'var(--amber)', letterSpacing: '0.12em', marginBottom: '10px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+          <p style={{ fontFamily: 'var(--font-playfair)', fontSize: '22px', fontWeight: 700, color: 'var(--amber)', letterSpacing: '0.12em', marginBottom: '10px' }}>
             MANSAPP
           </p>
-          <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: '22px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '8px' }}>
+          <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: '20px', fontWeight: 600, color: 'var(--text-primary)' }}>
             Welcome back
           </h1>
-          <p style={{ fontSize: '14px', color: 'var(--text-muted)', fontFamily: 'var(--font-inter)' }}>
-            Sign in to your account
-          </p>
         </div>
 
-        <form action={async () => {
-          'use server'
-          await signIn('google', { redirectTo: '/dashboard' })
-        }}>
-          <button type="submit" style={{
-            width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px',
-            padding: '14px', borderRadius: '12px', fontSize: '14px', fontWeight: 600,
-            background: 'var(--bg-raised)', border: '1px solid var(--border)',
-            color: 'var(--text-primary)', cursor: 'pointer', transition: 'all 0.2s ease',
-            fontFamily: 'var(--font-inter)',
-          }}>
-            <GoogleIcon />
-            Continue with Google
+        {/* Credentials form */}
+        <form onSubmit={handleCredentials} style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '20px' }}>
+          <input
+            type="email" placeholder="Email address" value={email}
+            onChange={(e) => setEmail(e.target.value)} required
+            style={inputStyle}
+          />
+          <input
+            type="password" placeholder="Password" value={password}
+            onChange={(e) => setPassword(e.target.value)} required
+            style={inputStyle}
+          />
+          {error && (
+            <p style={{ fontSize: '13px', color: 'var(--red)', fontFamily: 'var(--font-inter)' }}>{error}</p>
+          )}
+          <button type="submit" className="btn-primary" style={{ width: '100%', padding: '13px' }} disabled={loading}>
+            {loading ? 'Signing in…' : 'Sign in'}
           </button>
         </form>
 
-        <p style={{ textAlign: 'center', fontSize: '13px', color: 'var(--text-muted)', marginTop: '28px', fontFamily: 'var(--font-inter)' }}>
+        {/* Divider */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
+          <div style={{ flex: 1, height: '1px', background: 'var(--border)' }} />
+          <span style={{ fontSize: '12px', color: 'var(--text-subtle)', fontFamily: 'var(--font-inter)' }}>or</span>
+          <div style={{ flex: 1, height: '1px', background: 'var(--border)' }} />
+        </div>
+
+        {/* Google */}
+        <button onClick={handleGoogle} style={{
+          width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
+          padding: '13px', borderRadius: '12px', fontSize: '14px', fontWeight: 600,
+          background: 'var(--bg-raised)', border: '1px solid var(--border)',
+          color: 'var(--text-primary)', cursor: 'pointer', fontFamily: 'var(--font-inter)',
+        }}>
+          <GoogleIcon />
+          Continue with Google
+        </button>
+
+        <p style={{ textAlign: 'center', fontSize: '13px', color: 'var(--text-muted)', marginTop: '24px', fontFamily: 'var(--font-inter)' }}>
           No account?{' '}
           <Link href="/register" style={{ color: 'var(--amber)', textDecoration: 'none', fontWeight: 600 }}>
             Create one free
@@ -58,6 +103,12 @@ export default function LoginPage() {
       </div>
     </main>
   )
+}
+
+const inputStyle: React.CSSProperties = {
+  width: '100%', padding: '12px 14px', borderRadius: '10px', fontSize: '14px',
+  background: 'var(--bg-raised)', border: '1px solid var(--border)',
+  color: 'var(--text-primary)', fontFamily: 'var(--font-inter)', outline: 'none',
 }
 
 function GoogleIcon() {
