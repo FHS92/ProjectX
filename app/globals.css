@@ -1,50 +1,153 @@
 @import "tailwindcss";
 
 :root {
-  --background: #0d1a0d;
-  --surface: #111f11;
-  --surface-raised: #162516;
-  --border: #2a3d2a;
-  --amber: #c8860a;
-  --amber-light: #e09b0f;
-  --text-primary: #e8e4d9;
-  --text-muted: #7a8a7a;
-  --text-subtle: #4a5a4a;
-  --green-badge: #6abf40;
-  --green-badge-bg: #1e3a0a;
-  --brown: #3d2b1f;
+  /* Backgrounds */
+  --bg-base:        #080f08;
+  --bg-surface:     #0d160c;
+  --bg-raised:      #111e10;
+  --bg-card:        #152113;
+  --bg-card-hover:  #1a2918;
+
+  /* Borders */
+  --border-subtle:  #1a2818;
+  --border:         #243822;
+  --border-strong:  #2f4a2c;
+  --border-amber:   rgba(200, 134, 10, 0.4);
+
+  /* Brand */
+  --amber:          #c8860a;
+  --amber-light:    #e8a020;
+  --amber-dim:      #7a5008;
+  --amber-glow:     rgba(200, 134, 10, 0.12);
+  --amber-glow-lg:  rgba(200, 134, 10, 0.06);
+
+  /* Text */
+  --text-primary:   #f2ede0;
+  --text-secondary: #b8c4b0;
+  --text-muted:     #7a9074;
+  --text-subtle:    #4a5e46;
+
+  /* Status */
+  --green:          #5aad35;
+  --green-bg:       #0e2209;
+  --red:            #d94040;
+  --red-bg:         #220d0d;
+
+  /* Shadows */
+  --shadow-card:    0 2px 12px rgba(0,0,0,0.5), 0 1px 3px rgba(0,0,0,0.3);
+  --shadow-raised:  0 4px 24px rgba(0,0,0,0.6), 0 2px 6px rgba(0,0,0,0.4);
+  --shadow-amber:   0 0 24px rgba(200, 134, 10, 0.15);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--text-primary);
-  --color-surface: var(--surface);
-  --color-surface-raised: var(--surface-raised);
-  --color-border: var(--border);
-  --color-amber: var(--amber);
-  --color-amber-light: var(--amber-light);
-  --color-muted: var(--text-muted);
-  --color-subtle: var(--text-subtle);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans:    var(--font-inter);
+  --font-display: var(--font-playfair);
 }
 
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { color-scheme: dark; }
 
 body {
-  background: var(--background);
+  background: var(--bg-base);
   color: var(--text-primary);
-  font-family: var(--font-sans), 'Georgia', serif;
+  font-family: var(--font-inter), system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-playfair), Georgia, serif;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
 }
 
 /* Scrollbar */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: var(--background); }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: var(--amber); }
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--amber-dim); }
+
+/* Hide scrollbar utility */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Premium button base */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 28px;
+  border-radius: 10px;
+  font-family: var(--font-inter), sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: linear-gradient(135deg, var(--amber-light) 0%, var(--amber) 100%);
+  color: #060e06;
+  box-shadow: 0 2px 12px rgba(200, 134, 10, 0.3), inset 0 1px 0 rgba(255,255,255,0.15);
+  border: none;
+  text-decoration: none;
+}
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 20px rgba(200, 134, 10, 0.4), inset 0 1px 0 rgba(255,255,255,0.2);
+}
+.btn-primary:active { transform: translateY(0); }
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 24px;
+  border-radius: 10px;
+  font-family: var(--font-inter), sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  text-decoration: none;
+}
+.btn-ghost:hover {
+  border-color: var(--border-strong);
+  color: var(--text-primary);
+  background: var(--bg-raised);
+}
+
+/* Card base */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--shadow-card);
+  transition: all 0.2s ease;
+}
+.card:hover {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-raised);
+  transform: translateY(-1px);
+}
+.card-amber:hover {
+  border-color: var(--border-amber);
+  box-shadow: var(--shadow-amber);
+}
+
+/* Section label */
+.section-label {
+  font-family: var(--font-inter), sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-subtle);
+}
