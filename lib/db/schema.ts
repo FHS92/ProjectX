@@ -91,7 +91,7 @@ export const profiles = pgTable('profiles', {
 
 export const logs = pgTable('logs', {
   id: uuid('id').primaryKey().defaultRandom(),
-  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }),
   vertical: verticalEnum('vertical').notNull(),
   title: text('title').notNull(),
   notes: text('notes'),
@@ -100,9 +100,6 @@ export const logs = pgTable('logs', {
   longitude: real('longitude'),
   loggedAt: timestamp('logged_at').defaultNow().notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
-  // Shotgun / Pistol
-  score: integer('score'),
-  roundsTotal: integer('rounds_total'),
   // Hunting / Fishing
   species: text('species'),
   quantity: integer('quantity'),
@@ -113,6 +110,31 @@ export const logs = pgTable('logs', {
   // DIY
   projectName: text('project_name'),
   materialUsed: text('material_used'),
+  // IPSC / Pistol
+  matchId: uuid('match_id').references(() => matches.id, { onDelete: 'set null' }),
+  stageName: text('stage_name'),
+  timerReading: real('timer_reading'),
+  drawTime: real('draw_time'),
+  alpha: integer('alpha'),
+  charlie: integer('charlie'),
+  delta: integer('delta'),
+  mike: integer('mike'),
+  noShoot: integer('no_shoot'),
+  procErrors: integer('proc_errors'),
+  targetTypes: text('target_types'),
+  gearNotes: text('gear_notes'),
+  hitFactor: real('hit_factor'),
+  mediaUrls: text('media_urls').array(),
+})
+
+// ─── Matches ──────────────────────────────────────────────────────────────────
+
+export const matches = pgTable('matches', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  name: text('name').notNull(),
+  location: text('location'),
+  matchDate: timestamp('match_date').defaultNow().notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
 })
 
 // ─── Gear / Equipment ─────────────────────────────────────────────────────────
