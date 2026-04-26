@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FieldLog – Home</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0d1a0d; color: #e8e4d9; font-family: 'Georgia', serif; min-height: 100vh; }
+
+  /* NAV */
+  nav { background: #111f11; border-bottom: 1px solid #2a3d2a; padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; }
+  .logo { font-size: 22px; font-weight: bold; color: #c8860a; letter-spacing: 2px; }
+  .avatar { width: 36px; height: 36px; background: #3d2b1f; border-radius: 50%; border: 2px solid #c8860a; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+
+  /* GREETING */
+  .greeting { padding: 24px 20px 10px; }
+  .greeting h1 { font-size: 24px; color: #e8e4d9; }
+  .greeting p { font-size: 13px; color: #7a8a7a; margin-top: 4px; }
+
+  /* CONDITIONS BAR */
+  .conditions { margin: 16px 20px; background: #111f11; border: 1px solid #2a3d2a; border-radius: 10px; padding: 14px 16px; display: flex; justify-content: space-between; }
+  .cond-item { text-align: center; }
+  .cond-icon { font-size: 20px; }
+  .cond-label { font-size: 10px; color: #7a8a7a; margin-top: 2px; font-family: sans-serif; }
+  .cond-value { font-size: 13px; color: #c8860a; font-family: sans-serif; font-weight: bold; }
+
+  /* QUICK LOG */
+  .section-title { padding: 0 20px; font-size: 11px; letter-spacing: 2px; color: #7a8a7a; text-transform: uppercase; font-family: sans-serif; margin-bottom: 12px; margin-top: 24px; }
+  .quick-log { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 20px; }
+  .ql-btn { background: #111f11; border: 1px solid #2a3d2a; border-radius: 12px; padding: 18px 12px; text-align: center; cursor: pointer; transition: border-color 0.2s; }
+  .ql-btn:hover { border-color: #c8860a; }
+  .ql-btn .icon { font-size: 28px; margin-bottom: 6px; }
+  .ql-btn .label { font-size: 13px; color: #e8e4d9; font-family: sans-serif; }
+
+  /* RECENT LOGS */
+  .log-card { margin: 0 20px 12px; background: #111f11; border: 1px solid #2a3d2a; border-radius: 12px; padding: 14px; display: flex; gap: 14px; align-items: center; }
+  .log-thumb { width: 54px; height: 54px; border-radius: 8px; background: #1e3a1e; display: flex; align-items: center; justify-content: center; font-size: 26px; flex-shrink: 0; }
+  .log-info { flex: 1; }
+  .log-title { font-size: 14px; color: #e8e4d9; }
+  .log-meta { font-size: 11px; color: #7a8a7a; font-family: sans-serif; margin-top: 3px; }
+  .log-badge { font-size: 10px; background: #1e3a0a; color: #6abf40; border-radius: 20px; padding: 2px 8px; font-family: sans-serif; display: inline-block; margin-top: 5px; }
+
+  /* BOTTOM NAV */
+  .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: #111f11; border-top: 1px solid #2a3d2a; display: flex; justify-content: space-around; padding: 10px 0 16px; }
+  .bn-item { text-align: center; cursor: pointer; }
+  .bn-icon { font-size: 20px; }
+  .bn-label { font-size: 10px; color: #7a8a7a; font-family: sans-serif; margin-top: 2px; }
+  .bn-item.active .bn-label { color: #c8860a; }
+  .bn-item.active .bn-icon { filter: sepia(1) saturate(3) hue-rotate(5deg); }
+
+  .spacer { height: 80px; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">FIELDLOG</div>
+  <div class="avatar">JD</div>
+</nav>
+
+<div class="greeting">
+  <h1>Good morning, James.</h1>
+  <p>Saturday · 26 April 2026 · Cape Town</p>
+</div>
+
+<div class="conditions">
+  <div class="cond-item"><div class="cond-icon">🌤️</div><div class="cond-value">18°C</div><div class="cond-label">Weather</div></div>
+  <div class="cond-item"><div class="cond-icon">💨</div><div class="cond-value">12 km/h</div><div class="cond-label">Wind</div></div>
+  <div class="cond-item"><div class="cond-icon">🌕</div><div class="cond-value">Full</div><div class="cond-label">Moon</div></div>
+  <div class="cond-item"><div class="cond-icon">🌊</div><div class="cond-value">Low 08:42</div><div class="cond-label">Tide</div></div>
+</div>
+
+<div class="section-title">Quick Log</div>
+<div class="quick-log">
+  <div class="ql-btn"><div class="icon">🦆</div><div class="label">Hunt</div></div>
+  <div class="ql-btn"><div class="icon">🎯</div><div class="label">Shoot</div></div>
+  <div class="ql-btn"><div class="icon">🎣</div><div class="label">Fish</div></div>
+  <div class="ql-btn"><div class="icon">🤿</div><div class="label">Dive</div></div>
+</div>
+
+<div class="section-title" style="margin-top:28px;">Recent Activity</div>
+
+<div class="log-card">
+  <div class="log-thumb">🎯</div>
+  <div class="log-info">
+    <div class="log-title">Clay Pigeon – Sporting</div>
+    <div class="log-meta">Stellenbosch Gun Club · 24 Apr</div>
+    <div class="log-badge">⬆ PB — 43/50</div>
+  </div>
+</div>
+
+<div class="log-card">
+  <div class="log-thumb">🦆</div>
+  <div class="log-info">
+    <div class="log-title">Duck Hunt – Berg River</div>
+    <div class="log-meta">Berg River Flats · 20 Apr · 4 birds</div>
+    <div class="log-badge">✓ Limit reached</div>
+  </div>
+</div>
+
+<div class="log-card">
+  <div class="log-thumb">🎣</div>
+  <div class="log-info">
+    <div class="log-title">Shore Fishing – Blouberg</div>
+    <div class="log-meta">Bloubergstrand · 18 Apr · 3 catches</div>
+    <div class="log-badge">🐟 Kob · Steenbras · Elf</div>
+  </div>
+</div>
+
+<div class="spacer"></div>
+
+<div class="bottom-nav">
+  <div class="bn-item active"><div class="bn-icon">🏠</div><div class="bn-label">Home</div></div>
+  <div class="bn-item"><div class="bn-icon">📓</div><div class="bn-label">Logbook</div></div>
+  <div class="bn-item"><div class="bn-icon">📊</div><div class="bn-label">Stats</div></div>
+  <div class="bn-item"><div class="bn-icon">👥</div><div class="bn-label">Community</div></div>
+  <div class="bn-item"><div class="bn-icon">🪵</div><div class="bn-label">Workshop</div></div>
+</div>
+
+</body>
+</html>
