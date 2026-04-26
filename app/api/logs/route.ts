@@ -19,50 +19,49 @@ export async function POST(req: NextRequest) {
     depthMeters, durationMinutes,
     projectName, materialUsed,
     matchId, stageName, timerReading, drawTime,
+    powerFactor,
+    paperTargets, popperTargets, miniPopperTargets, noShootTargets,
     alpha, charlie, delta, mike, noShoot, procErrors,
-    targetTypes, gearNotes,
+    poppersKnocked, miniPoppersKnocked,
+    gearNotes, hitFactor,
   } = body
 
   if (!vertical || !title) {
     return NextResponse.json({ error: 'vertical and title are required.' }, { status: 400 })
   }
 
-  // Calculate hit factor for IPSC
-  const a = parseInt(alpha) || 0
-  const c = parseInt(charlie) || 0
-  const d = parseInt(delta) || 0
-  const m = parseInt(mike) || 0
-  const ns = parseInt(noShoot) || 0
-  const pe = parseInt(procErrors) || 0
-  const t = parseFloat(timerReading) || 0
-  const hitFactor = t > 0 ? parseFloat(((a * 5 + c * 3 + d * 1 - m * 10 - ns * 10 - pe * 10) / t).toFixed(4)) : null
-
   const [entry] = await db.insert(logs).values({
     vertical,
     title,
-    loggedAt:        loggedAt ? new Date(loggedAt) : new Date(),
-    locationName:    locationName || null,
-    notes:           notes || null,
-    species:         species || null,
-    quantity:        quantity ? parseInt(quantity) : null,
-    weight:          weight ? parseFloat(weight) : null,
-    depthMeters:     depthMeters ? parseFloat(depthMeters) : null,
-    durationMinutes: durationMinutes ? parseInt(durationMinutes) : null,
-    projectName:     projectName || null,
-    materialUsed:    materialUsed || null,
-    matchId:         matchId || null,
-    stageName:       stageName || null,
-    timerReading:    t || null,
-    drawTime:        drawTime ? parseFloat(drawTime) : null,
-    alpha:           a || null,
-    charlie:         c || null,
-    delta:           d || null,
-    mike:            m || null,
-    noShoot:         ns || null,
-    procErrors:      pe || null,
-    targetTypes:     targetTypes || null,
-    gearNotes:       gearNotes || null,
-    hitFactor,
+    loggedAt:            loggedAt ? new Date(loggedAt) : new Date(),
+    locationName:        locationName || null,
+    notes:               notes || null,
+    species:             species || null,
+    quantity:            quantity ? parseInt(quantity) : null,
+    weight:              weight ? parseFloat(weight) : null,
+    depthMeters:         depthMeters ? parseFloat(depthMeters) : null,
+    durationMinutes:     durationMinutes ? parseInt(durationMinutes) : null,
+    projectName:         projectName || null,
+    materialUsed:        materialUsed || null,
+    matchId:             matchId || null,
+    stageName:           stageName || null,
+    timerReading:        timerReading ? parseFloat(timerReading) : null,
+    drawTime:            drawTime ? parseFloat(drawTime) : null,
+    powerFactor:         powerFactor || 'minor',
+    paperTargets:        paperTargets ? parseInt(paperTargets) : null,
+    popperTargets:       popperTargets ? parseInt(popperTargets) : null,
+    miniPopperTargets:   miniPopperTargets ? parseInt(miniPopperTargets) : null,
+    noShootTargets:      noShootTargets ? parseInt(noShootTargets) : null,
+    alpha:               alpha ? parseInt(alpha) : null,
+    charlie:             charlie ? parseInt(charlie) : null,
+    delta:               delta ? parseInt(delta) : null,
+    mike:                mike ? parseInt(mike) : null,
+    noShoot:             noShoot ? parseInt(noShoot) : null,
+    procErrors:          procErrors ? parseInt(procErrors) : null,
+    poppersKnocked:      poppersKnocked ? parseInt(poppersKnocked) : null,
+    miniPoppersKnocked:  miniPoppersKnocked ? parseInt(miniPoppersKnocked) : null,
+    gearNotes:           gearNotes || null,
+    hitFactor:           hitFactor ? parseFloat(hitFactor) : null,
   }).returning()
 
   return NextResponse.json(entry, { status: 201 })
