@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
+
+export const dynamic = 'force-dynamic'
 import { logs } from '@/lib/db/schema'
 import { eq, and } from 'drizzle-orm'
 
