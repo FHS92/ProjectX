@@ -110,6 +110,12 @@ export const logs = pgTable('logs', {
   // DIY
   projectName: text('project_name'),
   materialUsed: text('material_used'),
+  // Shotgun
+  shotgunDiscipline: text('shotgun_discipline'), // 'skeet' | 'trap_dtl' | 'trap_olympic' | 'compak' | 'zz'
+  score: integer('score'),
+  roundsTotal: integer('rounds_total'),
+  dtlFirstBarrel: integer('dtl_first_barrel'),
+  dtlSecondBarrel: integer('dtl_second_barrel'),
   // IPSC / Pistol
   matchId: uuid('match_id').references(() => matches.id, { onDelete: 'set null' }),
   stageName: text('stage_name'),
