@@ -376,6 +376,67 @@ export default async function LogDetailPage({ params }: { params: Promise<{ id: 
       </>}
 
       {/* ════════════════════════════════════════
+          SHOTGUN
+      ════════════════════════════════════════ */}
+      {entry.vertical === 'shotgun' && entry.shotgunDiscipline && (() => {
+        const DISC: Record<string, string> = {
+          skeet: 'Olympic Skeet', trap_dtl: 'Trap DTL',
+          trap_olympic: 'Olympic Trap', compak: 'Compak Sporting', zz: 'ZZ Bird / Helice',
+        }
+        const disc = entry.shotgunDiscipline
+        const isDTL = disc === 'trap_dtl'
+        const dtlScore = isDTL ? (entry.dtlFirstBarrel ?? 0) * 3 + (entry.dtlSecondBarrel ?? 0) * 2 : 0
+        const dtlMax   = isDTL ? (entry.roundsTotal ?? 25) * 3 : 0
+        const hitPct   = !isDTL && entry.score != null && entry.roundsTotal
+          ? Math.round(entry.score / entry.roundsTotal * 100) : null
+        return (
+          <div style={{
+            padding: '28px 24px', borderRadius: '16px', marginBottom: '16px',
+            background: 'linear-gradient(135deg, rgba(200,134,10,0.08), rgba(200,134,10,0.02))',
+            border: '1.5px solid rgba(200,134,10,0.3)', textAlign: 'center',
+          }}>
+            <span style={{
+              display: 'inline-block', fontSize: '11px', fontWeight: 700,
+              letterSpacing: '0.12em', textTransform: 'uppercase',
+              color: 'var(--amber)', fontFamily: 'var(--font-inter)',
+              background: 'rgba(200,134,10,0.1)', padding: '4px 12px',
+              borderRadius: '6px', marginBottom: '18px',
+            }}>
+              {DISC[disc] ?? disc}
+            </span>
+            {isDTL && (entry.dtlFirstBarrel != null || entry.dtlSecondBarrel != null) && <>
+              <p style={{ fontFamily: 'var(--font-playfair)', fontSize: '52px', fontWeight: 800, color: 'var(--amber)', lineHeight: 1, marginBottom: '4px' }}>
+                {dtlScore}
+              </p>
+              <p style={{ fontSize: '13px', color: 'var(--text-subtle)', fontFamily: 'var(--font-inter)', marginBottom: '16px' }}>
+                out of {dtlMax} · {entry.roundsTotal ?? 25} birds
+              </p>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '32px' }}>
+                <div>
+                  <p style={{ fontSize: '10px', color: 'var(--text-subtle)', fontFamily: 'var(--font-inter)', marginBottom: '3px' }}>1ST BARREL</p>
+                  <p style={{ fontSize: '18px', fontWeight: 700, color: '#5aad35', fontFamily: 'var(--font-inter)' }}>{entry.dtlFirstBarrel ?? 0}</p>
+                </div>
+                <div>
+                  <p style={{ fontSize: '10px', color: 'var(--text-subtle)', fontFamily: 'var(--font-inter)', marginBottom: '3px' }}>2ND BARREL</p>
+                  <p style={{ fontSize: '18px', fontWeight: 700, color: '#c8860a', fontFamily: 'var(--font-inter)' }}>{entry.dtlSecondBarrel ?? 0}</p>
+                </div>
+              </div>
+            </>}
+            {!isDTL && entry.score != null && <>
+              <p style={{ fontFamily: 'var(--font-playfair)', fontSize: '52px', fontWeight: 800, color: 'var(--amber)', lineHeight: 1, marginBottom: '4px' }}>
+                {entry.score}{entry.roundsTotal != null ? `/${entry.roundsTotal}` : ''}
+              </p>
+              {hitPct != null && (
+                <p style={{ fontSize: '13px', color: 'var(--text-subtle)', fontFamily: 'var(--font-inter)' }}>
+                  {hitPct}% hit rate
+                </p>
+              )}
+            </>}
+          </div>
+        )
+      })()}
+
+      {/* ════════════════════════════════════════
           HUNTING / FISHING
       ════════════════════════════════════════ */}
       {(entry.vertical === 'hunting' || entry.vertical === 'fishing') &&

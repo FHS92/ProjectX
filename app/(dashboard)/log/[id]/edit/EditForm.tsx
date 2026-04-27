@@ -47,6 +47,11 @@ export interface EntryProp {
   durationMinutes?: number | null
   projectName?: string | null
   materialUsed?: string | null
+  shotgunDiscipline?: string | null
+  score?: number | null
+  roundsTotal?: number | null
+  dtlFirstBarrel?: number | null
+  dtlSecondBarrel?: number | null
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -152,6 +157,16 @@ export default function EditForm({ entry, matchName }: { entry: EntryProp; match
   const [projectName, setProjectName]   = useState(entry.projectName ?? '')
   const [materialUsed, setMaterialUsed] = useState(entry.materialUsed ?? '')
 
+  // Shotgun
+  type ShotgunDiscipline = 'skeet' | 'trap_dtl' | 'trap_olympic' | 'compak' | 'zz'
+  const [shotgunDiscipline, setShotgunDiscipline] = useState<ShotgunDiscipline | ''>(
+    (entry.shotgunDiscipline as ShotgunDiscipline) ?? ''
+  )
+  const [sgScore,    setSgScore]   = useState(numStr(entry.score))
+  const [sgTotal,    setSgTotal]   = useState(numStr(entry.roundsTotal) || '25')
+  const [dtlFirst,   setDtlFirst]  = useState(numStr(entry.dtlFirstBarrel))
+  const [dtlSecond,  setDtlSecond] = useState(numStr(entry.dtlSecondBarrel))
+
   useEffect(() => {
     if (vertical === 'pistol') {
       fetch('/api/matches').then(r => r.json()).then(setMatches)
@@ -212,6 +227,15 @@ export default function EditForm({ entry, matchName }: { entry: EntryProp; match
           species, quantity, weight,
           depthMeters, durationMinutes,
           projectName, materialUsed,
+          shotgunDiscipline: vertical === 'shotgun' ? shotgunDiscipline || null : null,
+          score: vertical === 'shotgun'
+            ? shotgunDiscipline === 'trap_dtl'
+              ? String((parseInt(dtlFirst) || 0) * 3 + (parseInt(dtlSecond) || 0) * 2)
+              : sgScore || null
+            : null,
+          roundsTotal: vertical === 'shotgun' ? sgTotal || null : null,
+          dtlFirstBarrel:  vertical === 'shotgun' && shotgunDiscipline === 'trap_dtl' ? dtlFirst  || null : null,
+          dtlSecondBarrel: vertical === 'shotgun' && shotgunDiscipline === 'trap_dtl' ? dtlSecond || null : null,
         }),
       })
 
@@ -414,9 +438,126 @@ export default function EditForm({ entry, matchName }: { entry: EntryProp; match
         {/* ══════════════════════════════════════════════
             SHOTGUN
         ══════════════════════════════════════════════ */}
-        {vertical === 'shotgun' && (
-          <CF label="Gear Used" value={gearNotes} onChange={setGearNotes} placeholder="e.g. Browning B525, 28g #8" textarea />
-        )}
+        {vertical === 'shotgun' && <>
+          {/* Discipline */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <Label>Discipline</Label>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
+              {([
+                { id: 'skeet',        label: 'Olympic Skeet', icon: '🎯' },
+                { id: 'trap_dtl',     label: 'Trap — DTL',    icon: '🏆' },
+                { id: 'trap_olympic', label: 'Olympic Trap',  icon: '🎖' },
+                { id: 'compak',       label: 'Compak',        icon: '🎪' },
+                { id: 'zz',           label: 'ZZ Bird',       icon: '⚡' },
+              ] as const).map(d => (
+                <button key={d.id} type="button"
+                  onClick={() => { setShotgunDiscipline(d.id); setSgScore(''); setSgTotal('25'); setDtlFirst(''); setDtlSecond('') }}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: '8px',
+                    padding: '12px 14px', borderRadius: '12px', cursor: 'pointer',
+                    fontFamily: 'var(--font-inter)', fontSize: '12px', fontWeight: 600,
+                    transition: 'all 0.15s',
+                    background: shotgunDiscipline === d.id ? 'rgba(200,134,10,0.12)' : 'var(--bg-raised)',
+                    border: shotgunDiscipline === d.id ? '1.5px solid var(--amber)' : '1px solid var(--border)',
+                    color: shotgunDiscipline === d.id ? 'var(--amber)' : 'var(--text-muted)',
+                  }}>
+                  <span style={{ fontSize: '18px' }}>{d.icon}</span>{d.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* DTL score */}
+          {shotgunDiscipline === 'trap_dtl' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <Label>DTL Score</Label>
+              <div style={{ padding: '16px', borderRadius: '14px', background: 'var(--bg-card)', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'center' }}>
+                    <span style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', color: '#5aad35', fontFamily: 'var(--font-inter)' }}>1st Barrel</span>
+                    <input type="number" min="0" max="25" value={dtlFirst} onChange={e => setDtlFirst(e.target.value)}
+                      placeholder="0" style={{ ...inputStyle, textAlign: 'center', fontSize: '22px', fontWeight: 700, padding: '10px 6px' }} />
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'center' }}>
+                    <span style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', color: '#c8860a', fontFamily: 'var(--font-inter)' }}>2nd Barrel</span>
+                    <input type="number" min="0" max="25" value={dtlSecond} onChange={e => setDtlSecond(e.target.value)}
+                      placeholder="0" style={{ ...inputStyle, textAlign: 'center', fontSize: '22px', fontWeight: 700, padding: '10px 6px' }} />
+                  </div>
+                </div>
+                {(dtlFirst || dtlSecond) && (
+                  <div style={{ padding: '10px 14px', borderRadius: '10px', background: 'rgba(200,134,10,0.06)', border: '1px solid rgba(200,134,10,0.2)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontFamily: 'var(--font-inter)' }}>Weighted score / 75</span>
+                    <span style={{ fontSize: '20px', fontWeight: 700, color: 'var(--amber)', fontFamily: 'var(--font-playfair)' }}>
+                      {(parseInt(dtlFirst) || 0) * 3 + (parseInt(dtlSecond) || 0) * 2}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Skeet / Olympic Trap / Compak */}
+          {(shotgunDiscipline === 'skeet' || shotgunDiscipline === 'trap_olympic' || shotgunDiscipline === 'compak') && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <Label>Score</Label>
+              <div style={{ padding: '16px', borderRadius: '14px', background: 'var(--bg-card)', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', gap: '10px', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'center' }}>
+                    <span style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', color: '#5aad35', fontFamily: 'var(--font-inter)' }}>Hits</span>
+                    <input type="number" min="0" value={sgScore} onChange={e => setSgScore(e.target.value)}
+                      placeholder="0" style={{ ...inputStyle, textAlign: 'center', fontSize: '28px', fontWeight: 700, padding: '10px 6px' }} />
+                  </div>
+                  <span style={{ fontSize: '22px', color: 'var(--text-subtle)', textAlign: 'center' }}>/</span>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'center' }}>
+                    <span style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-subtle)', fontFamily: 'var(--font-inter)' }}>Targets</span>
+                    <input type="number" min="1" value={sgTotal} onChange={e => setSgTotal(e.target.value)}
+                      style={{ ...inputStyle, textAlign: 'center', fontSize: '28px', fontWeight: 700, padding: '10px 6px' }} />
+                  </div>
+                </div>
+                {sgScore && parseInt(sgTotal) > 0 && (
+                  <div style={{ padding: '10px 14px', borderRadius: '10px', background: 'rgba(200,134,10,0.06)', border: '1px solid rgba(200,134,10,0.2)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontFamily: 'var(--font-inter)' }}>Hit rate</span>
+                    <span style={{ fontSize: '20px', fontWeight: 700, color: 'var(--amber)', fontFamily: 'var(--font-playfair)' }}>
+                      {((parseInt(sgScore) / parseInt(sgTotal)) * 100).toFixed(1)}%
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* ZZ Bird */}
+          {shotgunDiscipline === 'zz' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <Label>ZZ Score</Label>
+              <div style={{ padding: '16px', borderRadius: '14px', background: 'var(--bg-card)', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', gap: '10px', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'center' }}>
+                    <span style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', color: '#5aad35', fontFamily: 'var(--font-inter)' }}>ZZ Killed</span>
+                    <input type="number" min="0" value={sgScore} onChange={e => setSgScore(e.target.value)}
+                      placeholder="0" style={{ ...inputStyle, textAlign: 'center', fontSize: '28px', fontWeight: 700, padding: '10px 6px' }} />
+                  </div>
+                  <span style={{ fontSize: '22px', color: 'var(--text-subtle)', textAlign: 'center' }}>/</span>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'center' }}>
+                    <span style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-subtle)', fontFamily: 'var(--font-inter)' }}>Birds</span>
+                    <input type="number" min="1" value={sgTotal} onChange={e => setSgTotal(e.target.value)}
+                      style={{ ...inputStyle, textAlign: 'center', fontSize: '28px', fontWeight: 700, padding: '10px 6px' }} />
+                  </div>
+                </div>
+                {sgScore && parseInt(sgTotal) > 0 && (
+                  <div style={{ padding: '10px 14px', borderRadius: '10px', background: 'rgba(200,134,10,0.06)', border: '1px solid rgba(200,134,10,0.2)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontFamily: 'var(--font-inter)' }}>Kill rate</span>
+                    <span style={{ fontSize: '20px', fontWeight: 700, color: 'var(--amber)', fontFamily: 'var(--font-playfair)' }}>
+                      {((parseInt(sgScore) / parseInt(sgTotal)) * 100).toFixed(1)}%
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          <CF label="Gear Used" value={gearNotes} onChange={setGearNotes} placeholder="e.g. Browning B525, 28g #8, improved cyl" textarea />
+        </>}
 
         {/* ══════════════════════════════════════════════
             HUNTING

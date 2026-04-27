@@ -24,7 +24,20 @@ function subline(log: typeof logs.$inferSelect) {
     if (log.stageName) return log.stageName
   }
   if (log.vertical === 'shotgun') {
-    return log.locationName ?? ''
+    const DISC: Record<string, string> = {
+      skeet: 'Skeet', trap_dtl: 'Trap DTL', trap_olympic: 'Olympic Trap', compak: 'Compak', zz: 'ZZ Bird',
+    }
+    const disc = log.shotgunDiscipline ?? ''
+    const label = DISC[disc] ?? disc
+    let scoreStr = ''
+    if (disc === 'trap_dtl' && (log.dtlFirstBarrel != null || log.dtlSecondBarrel != null)) {
+      const s = (log.dtlFirstBarrel ?? 0) * 3 + (log.dtlSecondBarrel ?? 0) * 2
+      const t = (log.roundsTotal ?? 25) * 3
+      scoreStr = `${s}/${t}`
+    } else if (log.score != null && log.roundsTotal != null) {
+      scoreStr = `${log.score}/${log.roundsTotal}`
+    }
+    return [label, scoreStr].filter(Boolean).join(' · ')
   }
   if (log.vertical === 'hunting' || log.vertical === 'fishing') {
     return [log.species, log.quantity != null ? `× ${log.quantity}` : null].filter(Boolean).join(' ')
@@ -32,7 +45,6 @@ function subline(log: typeof logs.$inferSelect) {
   if (log.vertical === 'diving') {
     return log.depthMeters != null ? `${log.depthMeters}m · ${log.durationMinutes ?? '?'} min` : ''
   }
-  if (log.vertical === 'diy') return log.projectName ?? ''
   return ''
 }
 
