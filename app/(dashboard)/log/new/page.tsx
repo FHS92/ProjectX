@@ -123,33 +123,43 @@ export default function NewLogPage() {
     setSaving(true)
     setError('')
 
-    let resolvedMatchId = matchId
-    if (showNewMatch && newMatchName) {
-      const res = await fetch('/api/matches', {
+    // Capture formData synchronously before any await
+    const formData = Object.fromEntries(new FormData(e.currentTarget))
+
+    try {
+      let resolvedMatchId = matchId
+      if (showNewMatch && newMatchName) {
+        const matchRes = await fetch('/api/matches', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: newMatchName }),
+        })
+        resolvedMatchId = (await matchRes.json()).id
+      }
+
+      const res = await fetch('/api/logs', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: newMatchName }),
+        body: JSON.stringify({
+          ...formData, vertical, matchId: resolvedMatchId || null,
+          powerFactor, timerReading, drawTime,
+          paperTargets, popperTargets, miniPopperTargets, noShootTargets,
+          ...scores,
+          hitFactor: hfResult.hf?.toFixed(4),
+        }),
       })
-      resolvedMatchId = (await res.json()).id
-    }
 
-    const formData = Object.fromEntries(new FormData(e.currentTarget))
-    const res = await fetch('/api/logs', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        ...formData, vertical, matchId: resolvedMatchId || null,
-        powerFactor, timerReading, drawTime,
-        paperTargets, popperTargets, miniPopperTargets, noShootTargets,
-        ...scores,
-        hitFactor: hfResult.hf?.toFixed(4),
-      }),
-    })
-
-    if (res.ok) { router.push('/log') }
-    else {
-      const json = await res.json()
-      setError(json.error ?? 'Something went wrong.')
+      if (res.ok) {
+        router.push('/log')
+      } else {
+        const text = await res.text()
+        let msg = 'Something went wrong.'
+        try { msg = JSON.parse(text).error ?? msg } catch { /* non-JSON error body */ }
+        setError(msg)
+        setSaving(false)
+      }
+    } catch {
+      setError('Network error — please try again.')
       setSaving(false)
     }
   }
