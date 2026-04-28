@@ -454,16 +454,59 @@ export default async function LogDetailPage({ params }: { params: Promise<{ id: 
       {/* ════════════════════════════════════════
           DIVING
       ════════════════════════════════════════ */}
-      {entry.vertical === 'diving' &&
-        (entry.depthMeters != null || entry.durationMinutes != null) && (
+      {entry.vertical === 'diving' && (
+        entry.depthMeters != null || entry.durationMinutes != null || entry.diveType ||
+        entry.visibility != null || entry.waterTemp != null || entry.gasMix ||
+        entry.tankStart != null || entry.weightUsed != null || entry.buddy
+      ) && <>
         <Card>
           <SectionLabel>Dive Details</SectionLabel>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-            {entry.depthMeters    != null && <StatCell label="Max Depth"  value={`${entry.depthMeters} m`} />}
-            {entry.durationMinutes != null && <StatCell label="Duration"   value={`${entry.durationMinutes} min`} />}
+          {entry.diveType && (() => {
+            const DIVE_LABEL: Record<string, string> = {
+              reef: '🪸 Reef', wreck: '🚢 Wreck', wall: '🌊 Wall', cave: '🪨 Cave',
+              night: '🌙 Night Dive', drift: '💨 Drift', boat: '⛵ Boat', shore: '🏖 Shore',
+            }
+            return (
+              <p style={{ fontSize: '12px', fontWeight: 700, color: 'var(--amber)', fontFamily: 'var(--font-inter)', marginBottom: '14px' }}>
+                {DIVE_LABEL[entry.diveType!] ?? entry.diveType}
+              </p>
+            )
+          })()}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
+            {entry.depthMeters    != null && <StatCell label="Max Depth"   value={`${entry.depthMeters} m`} />}
+            {entry.durationMinutes != null && <StatCell label="Duration"    value={`${entry.durationMinutes} min`} />}
+            {entry.visibility     != null && <StatCell label="Visibility"   value={`${entry.visibility} m`} />}
+            {entry.waterTemp      != null && <StatCell label="Water Temp"   value={`${entry.waterTemp}°C`} />}
+            {entry.weightUsed     != null && <StatCell label="Weight Used"  value={`${entry.weightUsed} kg`} />}
+            {entry.buddy               && <StatCell label="Buddy"          value={entry.buddy} />}
           </div>
         </Card>
-      )}
+
+        {(entry.gasMix || entry.tankStart != null || entry.tankEnd != null) && (
+          <Card>
+            <SectionLabel>Gas & Tank</SectionLabel>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
+              {entry.gasMix && (() => {
+                const GAS: Record<string, string> = {
+                  air: 'Air (21%)', nitrox32: 'EAN 32', nitrox36: 'EAN 36',
+                  nitrox40: 'EAN 40', trimix: 'Trimix',
+                }
+                return <StatCell label="Gas Mix" value={GAS[entry.gasMix!] ?? entry.gasMix!} />
+              })()}
+              {entry.tankStart != null && <StatCell label="Tank Start" value={`${entry.tankStart} bar`} />}
+              {entry.tankEnd   != null && <StatCell label="Tank End"   value={`${entry.tankEnd} bar`} />}
+            </div>
+            {entry.tankStart != null && entry.tankEnd != null && entry.tankStart > entry.tankEnd && (
+              <div style={{ marginTop: '12px', padding: '10px 14px', borderRadius: '10px', background: 'rgba(200,134,10,0.06)', border: '1px solid rgba(200,134,10,0.2)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontFamily: 'var(--font-inter)' }}>Air consumed</span>
+                <span style={{ fontSize: '18px', fontWeight: 700, color: 'var(--amber)', fontFamily: 'var(--font-inter)' }}>
+                  {entry.tankStart - entry.tankEnd} bar
+                </span>
+              </div>
+            )}
+          </Card>
+        )}
+      </>}
 
       {/* ════════════════════════════════════════
           DIY

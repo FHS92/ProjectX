@@ -107,6 +107,14 @@ export const logs = pgTable('logs', {
   // Diving
   depthMeters: real('depth_meters'),
   durationMinutes: integer('duration_minutes'),
+  visibility: real('visibility'),
+  waterTemp: real('water_temp'),
+  gasMix: text('gas_mix'),
+  tankStart: integer('tank_start'),
+  tankEnd: integer('tank_end'),
+  weightUsed: real('weight_used'),
+  diveType: text('dive_type'),
+  buddy: text('buddy'),
   // DIY
   projectName: text('project_name'),
   materialUsed: text('material_used'),

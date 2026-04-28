@@ -43,7 +43,15 @@ function subline(log: typeof logs.$inferSelect) {
     return [log.species, log.quantity != null ? `× ${log.quantity}` : null].filter(Boolean).join(' ')
   }
   if (log.vertical === 'diving') {
-    return log.depthMeters != null ? `${log.depthMeters}m · ${log.durationMinutes ?? '?'} min` : ''
+    const DIVE: Record<string, string> = {
+      reef: 'Reef', wreck: 'Wreck', wall: 'Wall', cave: 'Cave',
+      night: 'Night', drift: 'Drift', boat: 'Boat', shore: 'Shore',
+    }
+    const parts: string[] = []
+    if (log.diveType) parts.push(DIVE[log.diveType] ?? log.diveType)
+    if (log.depthMeters != null) parts.push(`${log.depthMeters}m`)
+    if (log.durationMinutes != null) parts.push(`${log.durationMinutes} min`)
+    return parts.join(' · ')
   }
   return ''
 }

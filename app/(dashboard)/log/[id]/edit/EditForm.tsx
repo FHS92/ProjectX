@@ -52,6 +52,14 @@ export interface EntryProp {
   roundsTotal?: number | null
   dtlFirstBarrel?: number | null
   dtlSecondBarrel?: number | null
+  visibility?: number | null
+  waterTemp?: number | null
+  gasMix?: string | null
+  tankStart?: number | null
+  tankEnd?: number | null
+  weightUsed?: number | null
+  diveType?: string | null
+  buddy?: string | null
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -152,6 +160,16 @@ export default function EditForm({ entry, matchName }: { entry: EntryProp; match
   // Diving
   const [depthMeters, setDepthMeters]         = useState(numStr(entry.depthMeters))
   const [durationMinutes, setDurationMinutes] = useState(numStr(entry.durationMinutes))
+  type DiveType = 'reef' | 'wreck' | 'wall' | 'cave' | 'night' | 'drift' | 'boat' | 'shore'
+  type GasMix   = 'air'  | 'nitrox32' | 'nitrox36' | 'nitrox40' | 'trimix'
+  const [diveType,  setDiveType]  = useState<DiveType | ''>((entry.diveType as DiveType) ?? '')
+  const [gasMix,    setGasMix]    = useState<GasMix | ''>((entry.gasMix as GasMix) ?? '')
+  const [visibility,    setVisibility]    = useState(numStr(entry.visibility))
+  const [waterTemp,     setWaterTemp]     = useState(numStr(entry.waterTemp))
+  const [dTankStart,    setDTankStart]    = useState(numStr(entry.tankStart))
+  const [dTankEnd,      setDTankEnd]      = useState(numStr(entry.tankEnd))
+  const [weightUsed,    setWeightUsed]    = useState(numStr(entry.weightUsed))
+  const [buddy,         setBuddy]         = useState(entry.buddy ?? '')
 
   // DIY
   const [projectName, setProjectName]   = useState(entry.projectName ?? '')
@@ -226,6 +244,9 @@ export default function EditForm({ entry, matchName }: { entry: EntryProp; match
           hitFactor: hfResult?.hf?.toFixed(4) ?? null,
           species, quantity, weight,
           depthMeters, durationMinutes,
+          visibility, waterTemp, gasMix,
+          tankStart: dTankStart, tankEnd: dTankEnd,
+          weightUsed, diveType, buddy,
           projectName, materialUsed,
           shotgunDiscipline: vertical === 'shotgun' ? shotgunDiscipline || null : null,
           score: vertical === 'shotgun'
@@ -587,11 +608,108 @@ export default function EditForm({ entry, matchName }: { entry: EntryProp; match
             DIVING
         ══════════════════════════════════════════════ */}
         {vertical === 'diving' && <>
+
+          {/* Dive Type */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <Label>Dive Type</Label>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px' }}>
+              {([
+                { id: 'reef',  icon: '🪸', label: 'Reef' },
+                { id: 'wreck', icon: '🚢', label: 'Wreck' },
+                { id: 'wall',  icon: '🌊', label: 'Wall' },
+                { id: 'cave',  icon: '🪨', label: 'Cave' },
+                { id: 'night', icon: '🌙', label: 'Night' },
+                { id: 'drift', icon: '💨', label: 'Drift' },
+                { id: 'boat',  icon: '⛵', label: 'Boat' },
+                { id: 'shore', icon: '🏖', label: 'Shore' },
+              ] as const).map(t => (
+                <button key={t.id} type="button" onClick={() => setDiveType(t.id)} style={{
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px',
+                  padding: '10px 6px', borderRadius: '10px', cursor: 'pointer',
+                  fontFamily: 'var(--font-inter)', fontSize: '10px', fontWeight: 600,
+                  transition: 'all 0.15s',
+                  background: diveType === t.id ? 'rgba(200,134,10,0.12)' : 'var(--bg-raised)',
+                  border: diveType === t.id ? '1.5px solid var(--amber)' : '1px solid var(--border)',
+                  color: diveType === t.id ? 'var(--amber)' : 'var(--text-muted)',
+                }}>
+                  <span style={{ fontSize: '20px' }}>{t.icon}</span>{t.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Depth & Duration */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-            <CF label="Depth (m)" type="number" value={depthMeters} onChange={setDepthMeters} placeholder="e.g. 18" />
+            <CF label="Max Depth (m)" type="number" value={depthMeters} onChange={setDepthMeters} placeholder="e.g. 18" />
             <CF label="Duration (min)" type="number" value={durationMinutes} onChange={setDurationMinutes} placeholder="e.g. 45" />
           </div>
-          <CF label="Gear Used" value={gearNotes} onChange={setGearNotes} placeholder="e.g. Scubapro BCD, 12L tank" textarea />
+
+          {/* Conditions */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+            <CF label="Visibility (m)" type="number" value={visibility} onChange={setVisibility} placeholder="e.g. 15" />
+            <CF label="Water Temp (°C)" type="number" value={waterTemp} onChange={setWaterTemp} placeholder="e.g. 22" />
+          </div>
+
+          {/* Gas Mix */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <Label>Gas Mix</Label>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '6px' }}>
+              {([
+                { id: 'air',      label: 'Air',    sub: '21% O₂' },
+                { id: 'nitrox32', label: 'EAN 32', sub: '32% O₂' },
+                { id: 'nitrox36', label: 'EAN 36', sub: '36% O₂' },
+                { id: 'nitrox40', label: 'EAN 40', sub: '40% O₂' },
+                { id: 'trimix',   label: 'Trimix', sub: 'He mix' },
+              ] as const).map(g => (
+                <button key={g.id} type="button" onClick={() => setGasMix(g.id)} style={{
+                  padding: '10px 6px', borderRadius: '10px', cursor: 'pointer', textAlign: 'center',
+                  fontFamily: 'var(--font-inter)', fontSize: '11px', fontWeight: 700,
+                  transition: 'all 0.15s',
+                  background: gasMix === g.id ? 'rgba(200,134,10,0.12)' : 'var(--bg-raised)',
+                  border: gasMix === g.id ? '1.5px solid var(--amber)' : '1px solid var(--border)',
+                  color: gasMix === g.id ? 'var(--amber)' : 'var(--text-muted)',
+                }}>
+                  <div>{g.label}</div>
+                  <div style={{ fontSize: '9px', marginTop: '2px', opacity: 0.75 }}>{g.sub}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Tank Pressure */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <Label>Tank Pressure</Label>
+            <div style={{ padding: '16px', borderRadius: '14px', background: 'var(--bg-card)', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'center' }}>
+                  <span style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', color: '#5aad35', fontFamily: 'var(--font-inter)' }}>Start (bar)</span>
+                  <input type="number" min="0" max="300" value={dTankStart} onChange={e => setDTankStart(e.target.value)}
+                    placeholder="200" style={{ ...inputStyle, textAlign: 'center', fontSize: '22px', fontWeight: 700, padding: '10px 6px' }} />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'center' }}>
+                  <span style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', color: '#d94040', fontFamily: 'var(--font-inter)' }}>End (bar)</span>
+                  <input type="number" min="0" max="300" value={dTankEnd} onChange={e => setDTankEnd(e.target.value)}
+                    placeholder="50" style={{ ...inputStyle, textAlign: 'center', fontSize: '22px', fontWeight: 700, padding: '10px 6px' }} />
+                </div>
+              </div>
+              {dTankStart && dTankEnd && parseInt(dTankStart) > parseInt(dTankEnd) && (
+                <div style={{ padding: '10px 14px', borderRadius: '10px', background: 'rgba(200,134,10,0.06)', border: '1px solid rgba(200,134,10,0.2)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontFamily: 'var(--font-inter)' }}>Air consumed</span>
+                  <span style={{ fontSize: '20px', fontWeight: 700, color: 'var(--amber)', fontFamily: 'var(--font-playfair)' }}>
+                    {parseInt(dTankStart) - parseInt(dTankEnd)} bar
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Weight & Buddy */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+            <CF label="Weight (kg)" type="number" value={weightUsed} onChange={setWeightUsed} placeholder="e.g. 6" />
+            <CF label="Buddy" value={buddy} onChange={setBuddy} placeholder="e.g. Marco" />
+          </div>
+
+          <CF label="Gear Used" value={gearNotes} onChange={setGearNotes} placeholder="e.g. Scubapro BCD, Mares reg, 12L alu" textarea />
         </>}
 
         {/* ══════════════════════════════════════════════
